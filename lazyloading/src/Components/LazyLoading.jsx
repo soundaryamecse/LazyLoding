@@ -23,18 +23,51 @@ class LazyLoading extends React.Component
                 allImages.push(`https://live.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`)
                     
             })
-            this.setState({images:allImages})
+            this.setState({
+                images:allImages
+            },()=>console.log("images received"))
         })
+    }
+    componentDidUpdate(){
+        console.log("in")
+        const imageObserver = new IntersectionObserver(cb, {"threshold":"1"}) 
+
+        const all_images = document.querySelectorAll('img.lazy_image')
+        all_images.forEach(image => imageObserver.observe(image))
+
+
+        function cb(entries){
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const lazyImage = entry.target
+                    lazyImage.src = lazyImage.dataset.src
+                }
+            })
+        }
     }
 
     render()
     {
         const {search,images}=this.state
-        console.log(search,images)
         return(
             <div>
-                <input type="text" name="search" value={search} placeholder="searchBar" onChange={this.handlechange}/>
-                <button onClick={this.handleSubmit}>Submit</button>
+                <div>
+                    <input type="text" name="search" value={search} placeholder="searchBar" onChange={this.handlechange}/>
+                    <button onClick={this.handleSubmit}>Submit</button>
+                </div>
+                <div>
+                    {images.length ? 
+                    images.map(image => {
+                        return(
+                            <div>
+                                <img className="lazy_image" src = "https://via.placeholder.com/300x300" data-src={image} alt="search results"/>    
+                            </div>
+                        )
+                    }) :
+                    <div>
+                        Nothing to display    
+                    </div>}
+                </div>
             </div>
         )
     }
